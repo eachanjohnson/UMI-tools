@@ -129,7 +129,7 @@ def main(argv=None):
 
     if len(argv) == 1:
         parser.print_usage()
-        print ("Required options missing, see --help for more details")
+        print("Required options missing, see --help for more details")
         return 1
 
     group = U.OptionGroup(parser, "group-specific options")

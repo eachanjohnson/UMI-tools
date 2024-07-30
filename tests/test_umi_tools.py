@@ -32,6 +32,7 @@ SUBDIRS = ("gpipe", "optic")
 LOGFILE = open("test_scripts.log", "a")
 DEBUG = os.environ.get("CGAT_DEBUG", False)
 
+
 def compute_checksum(filename):
     '''return md5 checksum of file.'''
     return hashlib.md5(open(filename, 'rb').read()).hexdigest()
@@ -81,7 +82,6 @@ def get_scripts():
     return [os.path.abspath(os.path.join(tool_dir, tool_name))]
 
 
-
 def get_script_parameters():
     '''yield list of scripts to test.'''
     # the current directory
@@ -125,6 +125,7 @@ def get_script_parameters():
 # List of tests to perform.
 #########################################
 # The fields are:
+
 
 @pytest.mark.parametrize("script", get_scripts())
 def test_script_has_main(script):
@@ -266,7 +267,7 @@ def test_script(test_name,
                                 'in diff are with respect to sorted reference '
                                 'and output files\n\n')
 
-                    msg += "first 10 differences: {}".format(
+                    msg += "first 10 differences:\n{}".format(
                         "\n--\n".join(
                             ["\n".join(map(str, (x)))
                              for x in diffs]))
@@ -286,3 +287,4 @@ def test_script(test_name,
     if not DEBUG:
         shutil.rmtree(tmpdir)
     assert not fail, msg
+

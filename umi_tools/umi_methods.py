@@ -67,7 +67,7 @@ class Record:
 
 
 def fastqIterate(infile, remove_suffix=False):
-    '''iterate over contents of fastq file. If remove_suffic is True then /1 
+    '''iterate over contents of fastq file. If remove_suffic is True then /1
     and /2 is removed from the first field of the identifier. Raises ValueError
     if remove_suffix is true and /1 or /2 is not present at the end of the
     first field of any reads'''
@@ -77,16 +77,16 @@ def fastqIterate(infile, remove_suffix=False):
             return b
         else:
             return b.decode("utf-8")
- 
+
     def removeReadIDSuffix(line):
         '''Removes /1 or /2 from the a provided identifier :param:line.
         Identifier must be in the first field of the identifier (with ' ' as
         the field seperator) and sepreated with a '/'. Raises ValueError if this
         is not the case'''
-        
+
         components = line.split(' ')
         read_id = components[0]
-        
+
         if not read_id[-2:] in ['/1', '/2']:
             raise ValueError(
                 'read suffix must be /1 or /2. Observed: %s' % read_id[-2:])
@@ -94,9 +94,9 @@ def fastqIterate(infile, remove_suffix=False):
         read_id = read_id[:-2]
         components[0] = read_id
         line = ' '.join(components)
-        
+
         return(line)
-     
+
     while 1:
         line1 = convert2string(infile.readline()).strip()
         if not line1:
@@ -114,7 +114,7 @@ def fastqIterate(infile, remove_suffix=False):
 
         if remove_suffix:
             line1 = removeReadIDSuffix(line1)
-            
+
         yield Record(line1[1:], line2[:-1], line4[:-1])
 
 # End of FastqIterate()

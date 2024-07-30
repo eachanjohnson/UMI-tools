@@ -21,7 +21,8 @@ import pytest
 # DIRECTORIES to examine for python modules/scripts
 EXPRESSIONS = (
     ('tests', 'tests/*.py'),
-    ('umi_tools', 'umi_tools/*.py'))
+    ('umi_tools', 'umi_tools/*.py'),
+)
 
 # Codes to ignore in the pep8 BaseReport
 IGNORE = set(('E201',  # whitespace after '('
@@ -42,6 +43,7 @@ IGNORE = set(('E201',  # whitespace after '('
               'physical lines',
               'logical lines',))
 
+
 def get_style_params():
     '''test style of scripts
     '''
@@ -55,6 +57,7 @@ def get_style_params():
             if os.path.isdir(f):
                 continue
             params.append(os.path.abspath(f))
+
     return params
 
 
@@ -73,4 +76,6 @@ def test_style(filename):
     found = ['%s:%i' % (x, y) for x, y
              in report.counters.items() if x not in IGNORE]
     total = sum(take)
+
     assert total == 0, 'pep8 style violations in %s: %s' % (filename, ','.join(found))
+

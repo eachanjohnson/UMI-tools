@@ -8,12 +8,12 @@ this standard. In addition, the RSEM software requires that the mate of a read1
 appears directly after it in its input BAM. This requires that there is exactly
 one read1 alignment for every read2 and vice versa.
 
-In general (except in a few edge cases) UMI tools outputs only the read2 to that 
+In general (except in a few edge cases) UMI tools outputs only the read2 to that
 corresponds to the read specified in the mnext and mpos positions of a selected
-read1, and only outputs this read once, even if multiple read1s point to it. 
+read1, and only outputs this read once, even if multiple read1s point to it.
 This makes UMI-tools outputs incompatible with RSEM. This script takes the output
 from dedup or groups and ensures that each read1 has exactly one read2 (and vice
-versa), that read2 always appears directly after read1,and that pairs point to 
+versa), that read2 always appears directly after read1,and that pairs point to
 each other (note this is technically not valid SAM format). Copy any specified
 tags from read1 to read2 if they are present (by default, UG and BX, the unique
 group and correct UMI tags added by _group_)
@@ -21,7 +21,6 @@ group and correct UMI tags added by _group_)
 Input must to name sorted.
 
 '''
-
 
 from umi_tools import Utilities as U
 from collections import defaultdict, Counter
@@ -37,6 +36,7 @@ Usage: umi_tools prepare_for_rsem [OPTIONS] [--stdin=IN_BAM] [--stdout=OUT_BAM]
              generate a valid BAM file on standard out, please
              redirect log with --log=LOGFILE or --log2stderr '''
 
+
 def chunk_bam(bamfile):
     '''Take in a iterator of pysam.AlignmentSegment entries and yeild
     lists of reads that all share the same name'''
@@ -45,29 +45,31 @@ def chunk_bam(bamfile):
     output_buffer = list()
 
     for read in bamfile:
-    
+
         if last_query_name is not None and last_query_name != read.query_name:
-            yield(output_buffer)
+            yield output_buffer
             output_buffer = list()
-        
+
         last_query_name = read.query_name
         output_buffer.append(read)
 
-    yield (output_buffer)
+    yield output_buffer
+
 
 def copy_tags(tags, read1, read2):
     '''Given a  list of tags, copies the values of these tags from read1
     to read2, if the tag is set'''
 
     for tag in tags:
-        
+
         try:
             read1_tag = read1.get_tag(tag, with_value_type=True)
             read2.set_tag(tag, value=read1_tag[0], value_type=read1_tag[1])
         except KeyError:
             pass
-        
-    return(read2)
+
+    return read2
+
 
 def pick_mate(read, template_dict, mate_key):
     '''Find the mate of read in the template dict using key. It will retreieve
@@ -83,15 +85,16 @@ def pick_mate(read, template_dict, mate_key):
     # as its mate.
     for candidate_mate in potential_mates:
         if candidate_mate.next_reference_name == read.reference_name and \
-            candidate_mate.next_reference_start == read.pos:
+                candidate_mate.next_reference_start == read.pos:
             mate = candidate_mate
-               
+
     # if no such read is found, then pick any old secondary alignment at that position
     # note: this happens when UMI-tools outputs the wrong read as something's pair.
-    if mate is None and len(potential_mates) >0:
+    if mate is None and len(potential_mates) > 0:
         mate = potential_mates[0]
 
     return mate
+
 
 def main(argv=None):
 
@@ -132,7 +135,7 @@ def main(argv=None):
     else:
         mode = "b"
 
-    inbam = pysam.AlignmentFile(in_name, "r"+mode)
+    inbam = pysam.AlignmentFile(in_name, "r" + mode)
 
     if options.stdout != sys.stdout:
         out_name = options.stdout.name
@@ -145,7 +148,7 @@ def main(argv=None):
     options.tags = options.tags.split(",")
 
     for template in chunk_bam(inbam):
-        
+
         assert len(set(r.query_name for r in template)) == 1
         current_template = {True: defaultdict(list),
                             False: defaultdict(list)}
@@ -157,15 +160,15 @@ def main(argv=None):
         output = set()
 
         for read in template:
-           
-            mate = None
-           
-            # if this read is a non_primary alignment, we first want to check if it has a mate
-            # with the non-primary alignment flag set. 
 
-            mate_key_primary = ( True)
+            mate = None
+
+            # if this read is a non_primary alignment, we first want to check if it has a mate
+            # with the non-primary alignment flag set.
+
+            mate_key_primary = True
             mate_key_secondary = (read.next_reference_name, read.next_reference_start, False)
-            
+
             # First look for a read that has the same primary/secondary status
             # as read (i.e. secondary mate for secondary read, and primary mate
             # for primary read)
@@ -187,7 +190,7 @@ def main(argv=None):
                     "\t".join(map(str, [read.query_name, read.flag, read.reference_name, int(read.pos)]))
                 ))
                 continue
-            
+
             # because we might want to make changes to the read, but not have those changes reflected
             # if we need the read again,we copy the read. This is only way I can find to do this.
             read = pysam.AlignedSegment().from_dict(read.to_dict(), read.header)
@@ -195,16 +198,16 @@ def main(argv=None):
 
             # Make it so that if our read is secondary, the mate is also secondary. We don't make the
             # mate primary if the read is primary because we would otherwise end up with mulitple
-            # primary alignments. 
+            # primary alignments.
             if read.is_secondary:
                 mate.is_secondary = True
-            
+
             # In a situation where there is already one mate for each read, then we will come across
             # each pair twice - once when we scan read1 and once when we scan read2. Thus we need
-            # to make sure we don't output something already output. 
+            # to make sure we don't output something already output.
             if read.is_read1:
-                
-                mate = copy_tags(options.tags, read, mate)  
+
+                mate = copy_tags(options.tags, read, mate)
                 output_key = str(read) + str(mate)
 
                 if output_key not in output:
@@ -231,9 +234,9 @@ def main(argv=None):
                 ))
                 continue
 
-    if not out_name == "-":
+    if out_name != "-":
         outbam.close()
-    
+
     U.info("Total pairs output: {}, Pairs skipped - no mates: {},"
            " Pairs skipped - not read1 or 2: {}".format(
                skipped_stats["pairs_output"],
@@ -241,8 +244,6 @@ def main(argv=None):
                skipped_stats["skipped_not_read12"]))
     U.Stop()
 
+
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
-
-
-

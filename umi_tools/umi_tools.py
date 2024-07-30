@@ -33,7 +33,7 @@ from umi_tools import __version__
 def main():
     argv = sys.argv
 
-    if len(argv) <2 or argv[1] == "--help" or argv[1] == "-h":
+    if len(argv) < 2 or argv[1] == "--help" or argv[1] == "-h":
         print("For full UMI-tools documentation, see: "
               "https://umi-tools.readthedocs.io/en/latest/\n")
         print(globals()["__doc__"])
