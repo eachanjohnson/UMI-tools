@@ -56,8 +56,7 @@ def check_main(script):
         script = re.sub("%s_" % s, "%s/" % s, script)
 
     # check for text match
-    assert([x for x in open(script) if x.startswith("def main(")],
-        "no main function")
+    assert [x for x in open(script) if x.startswith("def main(")], "no main function"
 
 
 def compute_checksum(filename):
@@ -202,7 +201,7 @@ def check_script(test_name,
 
     if not DEBUG:
         shutil.rmtree(tmpdir)
-    assert(not fail, msg)
+    assert not fail, msg
 
 
 def get_tests_directory():
