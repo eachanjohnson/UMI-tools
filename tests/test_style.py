@@ -16,6 +16,7 @@ This code is borrowed with permission from https://github.com/CGATOxford/cgat
 import pep8
 import glob
 import os
+import pytest
 
 # DIRECTORIES to examine for python modules/scripts
 EXPRESSIONS = (
@@ -41,8 +42,24 @@ IGNORE = set(('E201',  # whitespace after '('
               'physical lines',
               'logical lines',))
 
+def get_style_params():
+    '''test style of scripts
+    '''
+    params = []
+    for label, expression in EXPRESSIONS:
 
-def check_style(filename):
+        files = glob.glob(expression)
+        files.sort()
+
+        for f in files:
+            if os.path.isdir(f):
+                continue
+            params.append(os.path.abspath(f))
+    return params
+
+
+@pytest.mark.parametrize("filename", get_style_params())
+def test_style(filename):
     '''check style of filename.
     '''
 
@@ -57,19 +74,3 @@ def check_style(filename):
              in report.counters.items() if x not in IGNORE]
     total = sum(take)
     assert total == 0, 'pep8 style violations in %s: %s' % (filename, ','.join(found))
-
-
-def test_style():
-    '''test style of scripts
-    '''
-
-    for label, expression in EXPRESSIONS:
-
-        files = glob.glob(expression)
-        files.sort()
-
-        for f in files:
-            if os.path.isdir(f):
-                continue
-            check_style.description = os.path.abspath(f)
-            yield(check_style, os.path.abspath(f))
