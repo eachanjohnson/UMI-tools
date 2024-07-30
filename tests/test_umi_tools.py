@@ -267,7 +267,7 @@ def test_script(test_name,
                                 'in diff are with respect to sorted reference '
                                 'and output files\n\n')
 
-                    msg += "first 10 differences:\n{}".format(
+                    msg += "\nfirst 10 differences:\n{}".format(
                         "\n--\n".join(
                             ["\n".join(map(str, (x)))
                              for x in diffs]))
